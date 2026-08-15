@@ -131,9 +131,15 @@ public class PasswordGeneratorTests
         var gerador = new PasswordGenerator();
         var hasher = new PasswordHasher();
 
+        var connectionString =
+            Environment.GetEnvironmentVariable("VOID_TEST_CONNECTION");
+
+        Assert.False(
+            string.IsNullOrWhiteSpace(connectionString),
+            "A variável de ambiente VOID_TEST_CONNECTION não está configurada.");
+
         var options = new DbContextOptionsBuilder<VoidPassDbContext>()
-            .UseNpgsql(
-                "Host=localhost;Port=5432;Database=voidpass;Username=postgres;Password=d6L1!Y(Jj0!Lq)r6")
+            .UseNpgsql(connectionString)
             .Options;
 
         await using var db = new VoidPassDbContext(options);

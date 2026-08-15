@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using VoidPass.Data;
 
 namespace VoidPass.Services;
@@ -25,13 +26,17 @@ public class LimboService
     {
         while (true)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             string senha = _generator.Gerar(tamanho);
             string hash = _hasher.Hash(senha);
 
             bool jaExiste = await _db.UsedPasswords
+                .AsNoTracking()
                 .AnyAsync(x => x.Hash == hash, cancellationToken);
 
-            if (jaExiste) continue;
+            if (jaExiste)
+                continue;
 
             var registro = new Models.UsedPassword
             {
@@ -44,9 +49,12 @@ public class LimboService
             try
             {
                 await _db.SaveChangesAsync(cancellationToken);
+
                 return senha;
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
+                when (ex.InnerException is PostgresException postgresException &&
+                      postgresException.SqlState == PostgresErrorCodes.UniqueViolation)
             {
                 _db.Entry(registro).State = EntityState.Detached;
             }

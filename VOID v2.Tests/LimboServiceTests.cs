@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Xunit;
 using VoidPass.Data;
 using VoidPass.Services;
+using Xunit;
 
 namespace VOID_v2.Tests;
 
@@ -10,9 +10,13 @@ public class LimboServiceTests
     [Fact]
     public async Task DeveGerarDuasSenhasUnicasSimultaneamente()
     {
+        var connectionString =
+            Environment.GetEnvironmentVariable("VOID_TEST_CONNECTION_STRING")
+            ?? throw new InvalidOperationException(
+                "VOID_TEST_CONNECTION_STRING não configurada.");
+
         var options = new DbContextOptionsBuilder<VoidPassDbContext>()
-            .UseNpgsql(
-                "Host=localhost;Port=5432;Database=voidpass;Username=postgres;Password=d6L1!Y(Jj0!Lq)r6")
+            .UseNpgsql(connectionString)
             .Options;
 
         await using var db1 = new VoidPassDbContext(options);
@@ -34,8 +38,15 @@ public class LimboServiceTests
             gerador2,
             hasher2);
 
-        var tarefa1 = limbo1.GerarSenhaUnicaAsync(12);
-        var tarefa2 = limbo2.GerarSenhaUnicaAsync(12);
+        var cancellationToken = TestContext.Current.CancellationToken;
+
+        var tarefa1 = limbo1.GerarSenhaUnicaAsync(
+            12,
+            cancellationToken);
+
+        var tarefa2 = limbo2.GerarSenhaUnicaAsync(
+            12,
+            cancellationToken);
 
         var resultados = await Task.WhenAll(
             tarefa1,
