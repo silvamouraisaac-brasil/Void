@@ -34,8 +34,6 @@ As credenciais de banco de dados utilizadas durante o desenvolvimento são manti
 
 Arquivos de configuração contendo informações sensíveis são ignorados pelo Git através do `.gitignore`.
 
-**Nunca coloque senhas, tokens, chaves de API ou outras credenciais diretamente no código ou em um repositório público.**
-
 ## Objetivo
 
 O principal objetivo do VOID é servir como **material prático de aprendizado sobre APIs e desenvolvimento backend**, permitindo experimentar conceitos de persistência, segurança, testes e integração com banco de dados em um projeto real.
